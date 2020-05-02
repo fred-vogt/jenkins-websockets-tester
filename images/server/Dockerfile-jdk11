@@ -1,0 +1,54 @@
+FROM jenkins-upstream-jdk11
+
+USER root
+
+# Install Linux kernal setcap support, lets java open low numbered ports as non-root
+RUN apt-get update                  \
+ && apt-get install -y libcap2-bin  \
+ && rm -rf /var/lib/apt/lists/*
+RUN setcap 'cap_net_bind_service=+ep' "${JAVA_HOME}/bin/java"
+
+# Debugging utilities
+RUN apt-get update          \
+ && apt-get install -y vim  \
+ && rm -rf /var/lib/apt/lists/*
+
+USER jenkins
+
+# Install plugins
+COPY plugins.txt /usr/share/jenkins/ref/plugins.txt
+RUN /usr/local/bin/install-plugins.sh < /usr/share/jenkins/ref/plugins.txt
+
+# Remove black-listed plugins
+RUN for plugin in       \
+        ldap            \
+        windows-slaves  \
+        ; do \
+    touch /usr/share/jenkins/ref/plugins/${plugin}.jpi.disabled; \
+done
+
+# Download HTTP/2 jdk-9+ ALPN support
+ARG MVN_URL=https://repo.maven.apache.org/maven2
+ARG jettyVersion=9.4.26.v20200117
+RUN curl --create-dirs -sSLo \
+      /usr/share/jenkins/ref/extraLibs/jetty-alpn-server-${jettyVersion}.jar \
+      ${MVN_URL}/org/eclipse/jetty/jetty-alpn-server/${jettyVersion}/jetty-alpn-server-${jettyVersion}.jar \
+ && curl --create-dirs -sSLo \
+      /usr/share/jenkins/ref/extraLibs/jetty-alpn-java-server-${jettyVersion}.jar \
+      ${MVN_URL}/org/eclipse/jetty/jetty-alpn-java-server/${jettyVersion}/jetty-alpn-java-server-${jettyVersion}.jar \
+ && chmod o+rx /usr/share/jenkins/ref/extraLibs
+
+# Config Scripts
+COPY hook-scripts/*.groovy /usr/share/jenkins/ref/init.groovy.d/
+
+# Set admin user, Disable Upgrade Wizard, Disable Kill Switch
+RUN mkdir -p /var/jenkins_home/secrets;                                            \
+    echo 'admin' > /var/jenkins_home/secrets/initialAdminPassword;                 \
+    echo '2.0'   > /usr/share/jenkins/ref/jenkins.install.UpgradeWizard.state;     \
+    echo 'false' > /var/jenkins_home/secrets/slave-to-master-security-kill-switch
+
+# Modified launcher
+COPY jenkins-jdk11.sh /usr/local/bin/jenkins.sh
+
+# Configuration as Code yaml file(s)
+COPY files/jenkins.yaml /usr/share/jenkins/ref/

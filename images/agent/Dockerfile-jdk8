@@ -1,0 +1,60 @@
+#
+# Multi-stage: Jenkins CLI (jenkins-cli.jar) from upstream
+#
+ARG jenkinsVersion
+FROM jenkins/jenkins:${jenkinsVersion} as jenkins_server
+ARG jenkinsVersion
+WORKDIR /tmp
+RUN unzip /usr/share/jenkins/jenkins.war "WEB-INF/lib/cli-${jenkinsVersion}.jar"
+
+#
+# Final Jenkins Agent
+#
+FROM openjdk:8-jdk
+ARG jenkinsVersion
+
+# Jenkins CLI (jenkins-cli.jar) from multi-stage 
+RUN mkdir -p /usr/share/jenkins
+COPY --from=jenkins_server "/tmp/WEB-INF/lib/cli-${jenkinsVersion}.jar" /usr/share/jenkins/jenkins-cli.jar
+
+# Install remoting jar
+ARG REMOTING_VERSION=4.3
+ARG RELEASES_URL=https://repo.jenkins-ci.org/public/org/jenkins-ci/main/remoting
+RUN curl --create-dirs -sSLo /usr/share/jenkins/agent.jar ${RELEASES_URL}/${REMOTING_VERSION}/remoting-${REMOTING_VERSION}.jar \
+ && chmod 755 /usr/share/jenkins \
+ && chmod 644 /usr/share/jenkins/agent.jar
+
+# Jenkins service user
+ARG user=jenkins
+ARG group=jenkins
+ARG uid=8008
+ARG gid=8008
+ARG HOME=/var/lib/jenkins
+ENV HOME ${HOME}
+RUN groupadd -g ${gid} ${group} \
+ && useradd -d "$HOME" -u ${uid} -g ${gid} -m -s /bin/bash ${user}
+
+# Agent jar cache folder
+ARG JAR_CACHE_DIR=${HOME}/jar-cache
+ENV JAR_CACHE_DIR ${JAR_CACHE_DIR}
+RUN mkdir -p ${JAR_CACHE_DIR} \
+ && chown -R jenkins:jenkins "${JAR_CACHE_DIR}"
+
+# Agent workspace path
+RUN mkdir -p "${HOME}/workspace" \
+ && chown jenkins:jenkins "${HOME}/workspace"
+VOLUME "${HOME}/workspace"
+
+# Agent cache path
+RUN mkdir -p "${HOME}/cache" \
+ && chown jenkins:jenkins "${HOME}/cache"
+VOLUME "${HOME}/cache"
+
+# Container entry-point agent launcher
+COPY jenkins-agent-jdk8.sh /usr/local/bin/jenkins-agent.sh
+
+USER jenkins
+
+WORKDIR ${HOME}
+
+ENTRYPOINT ["/usr/local/bin/jenkins-agent.sh"]

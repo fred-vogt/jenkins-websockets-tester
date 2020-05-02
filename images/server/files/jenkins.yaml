@@ -1,0 +1,30 @@
+jenkins:
+  noUsageStatistics: true
+  systemMessage:
+  numExecutors: 0
+  slaveAgentPort: -1
+  agentProtocols:
+  markupFormatter:
+    rawHtml:
+      disableSyntaxHighlighting: true
+  remotingSecurity:
+    enabled: true
+  crumbIssuer:
+    standard:
+      excludeClientIPFromCrumb: true
+  updateCenter:
+    sites:
+    - id: "default"
+      url: "https://updates.jenkins.io/update-center.json"
+
+security:
+  queueItemAuthenticator:
+    authenticators:
+    - global:
+        strategy: "triggeringUsersAuthorizationStrategy"
+
+unclassified:
+  shell:
+    shell: "/bin/bash"
+  globalDefaultFlowDurabilityLevel:
+    durabilityHint: PERFORMANCE_OPTIMIZED

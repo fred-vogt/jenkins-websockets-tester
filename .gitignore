@@ -1,0 +1,7 @@
+target
+
+images/server/jenkins-ci.docker
+
+.m2
+
+cli-cookies.txt
