@@ -37,6 +37,15 @@ network:
 	    docker network create '$(DOCKER_NETWORK)';                     \
 	fi
 
+tls:
+	mkdir -p "$(TLS_CONFIG)"
+	docker run -it --rm --init --user $(user_id)  \
+	    -v "$(TLS_CONFIG):$(TLS_CONFIG)"          \
+	    "tls-tool"                                \
+	    /usr/local/bin/create-tls-assets.sh       \
+	    "$(TLS_CONFIG)"                           \
+	    IP:$(IP_ADDRESS)
+	    
 import-cert:
 	sudo security add-trusted-cert \
 	    -k /Library/Keychains/System.keychain \

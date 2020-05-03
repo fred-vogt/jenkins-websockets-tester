@@ -56,24 +56,11 @@ pull-jenkinsci-docker:
 	    fi; \
 	fi
 
-ifdef IP_ADDRESS
-	ADDITION_SANS=IP:$(IP_ADDRESS)
-endif
-
 build-tls:
 	docker build -t "tls-tool"                 \
 	    --build-arg nonroot_user=$(user_name)  \
 	    --build-arg  nonroot_uid=$(user_id)    \
 	images/tls
-
-tls:
-	mkdir -p "$(TLS_CONFIG)"
-	docker run -it --rm --init --user $(user_id)  \
-	    -v "$(TLS_CONFIG):$(TLS_CONFIG)"         \
-	    "tls-tool"                                \
-	    /usr/local/bin/create-tls-assets.sh       \
-	    "$(TLS_CONFIG)"                           \
-	    $(ADDITION_SANS)
 
 print-server-cert:
 	openssl s_client -showcerts -servername localhost -connect localhost:8443 </dev/null \

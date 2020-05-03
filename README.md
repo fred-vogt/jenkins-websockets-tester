@@ -40,3 +40,19 @@ $ make JDK_VERSION=jdk11 build-agent run-agent
 ```
 $ make ui
 ```
+
+## Mac Usage
+```
+#
+# Tinker with MAC_INTERFACE value until your host IP address is detected
+#   In my case my docking stations gigabit ethernet is 'en9'
+#
+$ make MAC_INTERFACE=en9 ip-address
+192.168.42.66
+
+# Explicitly set the interface name
+$ make MAC_INTERFACE=en9 build-tls tls import-cert
+$ make MAC_INTERFACE=en9 JDK_VERSION=jdk11 build-server run-server
+$ make MAC_INTERFACE=en9 JDK_VERSION=jdk11 build-agent run-agent
+$ make MAC_INTERFACE=en9 ui
+```

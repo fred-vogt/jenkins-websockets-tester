@@ -28,6 +28,14 @@ run-server:
 	    -h 'jenkins-server'                                     \
 	    "$(SERVER_IMAGE_NAME)"
 
+tls:
+	mkdir -p "$(TLS_CONFIG)"
+	docker run -it --rm --init --user $(user_id)  \
+	    -v "$(TLS_CONFIG):$(TLS_CONFIG)"          \
+	    "tls-tool"                                \
+	    /usr/local/bin/create-tls-assets.sh       \
+	    "$(TLS_CONFIG)"
+
 import-cert:
 	certutil -d "sql:$(HOME)/.pki/nssdb" -D -n "jenkins-local" || true; \
 	certutil -d "sql:$(HOME)/.pki/nssdb" -A -t "C,," -n "jenkins-local" -i "$(HOME)/.jenkins/tls/server-cert.pem"; \
