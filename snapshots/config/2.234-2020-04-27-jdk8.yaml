@@ -159,7 +159,6 @@ unclassified:
   globalDefaultFlowDurabilityLevel:
     durabilityHint: PERFORMANCE_OPTIMIZED
   location:
-    adminAddress: "admin+jenkins@cicdenv.com"
     url: "https://localhost:8443/"
   mailer:
     charset: "UTF-8"

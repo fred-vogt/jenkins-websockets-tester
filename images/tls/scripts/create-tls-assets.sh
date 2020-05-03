@@ -25,7 +25,7 @@ openssl req \
         -x509 \
         -days 30 \
         -out "${output_dir}/server-cert.pem" \
-        -subj "/C=US/ST=CA/L=San Francisco/O=cicdenv/OU=local/CN=localhost/emailAddress=jenkins@cicdenv.com" \
+        -subj "/C=US/ST=CA/L=San Francisco/O=JENKINS-61212/OU=local/CN=localhost/emailAddress=jenkins@JENKINS-61212.com" \
         -reqexts SAN \
         -extensions SAN \
         -config <(cat /etc/ssl/openssl.cnf <(printf "\n[SAN]\nsubjectAltName=DNS:localhost,IP:127.0.0.1${additional_sans}\n")) \
