@@ -35,3 +35,8 @@ $ make JDK_VERSION=jdk11 build-server run-server
 # terminal #2
 $ make JDK_VERSION=jdk11 build-agent run-agent
 ```
+
+### WebUI
+```
+$ make ui
+```
